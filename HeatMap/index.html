@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Legend Example (DOM Legends) | heatmap.js</title>
+    <style>
+        body,
+        html,
+        h2 {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
+            font-family: sans-serif;
+        }
+
+        body * {
+            font-weight: 200;
+        }
+
+        #heatmapContainerWrapper {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            /*            background: rgba(0, 0, 0, .1);*/
+            background: url(%E8%B2%93%E9%A0%AD%E9%B7%B9.jpg)no-repeat;
+            background-size: auto 100%;
+            background-position: top left;
+        }
+
+        #heatmapContainer {
+            width: 100%;
+            height: 100%;
+        }
+
+        #heatmapLegend {
+            background: white;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            padding: 10px;
+        }
+
+        #min {
+            float: left;
+        }
+
+        #max {
+            float: right;
+        }
+
+        h1 {
+            position: absolute;
+            background: black;
+            color: white;
+            padding: 10px;
+            font-weight: 200;
+        }
+
+        #all-examples-info {
+            position: absolute;
+            background: white;
+            font-size: 16px;
+            padding: 20px;
+            top: 100px;
+            width: 350px;
+            line-height: 150%;
+            border: 1px solid rgba(0, 0, 0, .2);
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="heatmapContainerWrapper">
+        <div id="heatmapContainer">
+
+        </div>
+        <div id="heatmapLegend">
+            <h2>HeatMap溫度範圍</h2>
+            <span id="min"></span>
+            <span id="max"></span>
+            <img id="gradient" src="" style="width:100%" />
+        </div>
+    </div>
+    
+    <script src="./build/heatmap.js"></script>
+    <script>
+        var w = (+window.getComputedStyle(document.body).width.replace(/px/, ''));
+        var h = (+window.getComputedStyle(document.body).height.replace(/px/, ''));
+        document.getElementById("heatmapContainerWrapper").style.width = w;
+        document.getElementById("heatmapContainerWrapper").style.height = h;
+
+        window.onload = function() {
+            function $(id) {
+                return document.getElementById(id);
+            };
+
+            
+            var legendCanvas = document.createElement('canvas');
+            legendCanvas.width = 100;
+            legendCanvas.height = 10;
+
+            var legendCtx = legendCanvas.getContext('2d');
+            var gradientCfg = {};
+
+            function updateLegend(data) {
+                $('min').innerHTML = data.min;
+                $('max').innerHTML = data.max;
+                if (data.gradient != gradientCfg) {
+                    gradientCfg = data.gradient;
+                    var gradient = legendCtx.createLinearGradient(0, 0, 100, 1);
+                    for (var key in gradientCfg) {
+                        gradient.addColorStop(key, gradientCfg[key]);
+                    }
+
+                    legendCtx.fillStyle = gradient;
+                    legendCtx.fillRect(0, 0, 100, 10);
+                    $('gradient').src = legendCanvas.toDataURL();
+                }
+            };
+
+
+            var heatmap = h337.create({
+                container: document.getElementById('heatmapContainer'),
+                maxOpacity: .5,
+                radius: 10,
+                blur: .75,
+                // update the legend whenever there's an extrema change
+                onExtremaChange: function onExtremaChange(data) {
+                    updateLegend(data);
+                },
+//                gradient: {
+//                    '.1': 'black',
+//                    '.5': 'white',
+//                    '.8': 'blue',
+//                    '.84': 'green',
+//                    '.88': 'yellow',
+//                    '.9': 'orange',
+//                    '.95': 'red',
+//                }
+            });
+
+
+            var temp = 90;
+            var flag = true;
+            var generate = function() {
+                var height = (+window.getComputedStyle(document.body).height.replace(/px/, ''));
+                var width = (height / 395) * 550;
+
+                
+                var extremas = [(Math.random() * 1000) >> 0, (Math.random() * 1000) >> 0];
+                var max = 100;
+                var min = 0;
+                var t = [];
+                var init = +new Date;
+
+                
+                t.push({
+                    x: parseInt(width * 0.255, 10),
+                    y: parseInt(height * 0.2318, 10),
+                    value: temp,
+                    radius: 200
+                });
+                t.push({
+                    x: parseInt(width * 0.3355, 10),
+                    y: parseInt(height * 0.225, 10),
+                    value: temp,
+                    radius: 24
+                });
+                t.push({
+                    x: parseInt(width * 0.45, 10),
+                    y: parseInt(height * 0.273, 10),
+                    value: temp,
+                    radius: 28
+                });
+                t.push({
+                    x: parseInt(width * 0.529, 10),
+                    y: parseInt(height * 0.278, 10),
+                    value: temp,
+                    radius: 28
+                });
+                t.push({
+                    x: 100,
+                    y: 100,
+                    value: temp,
+                    radius: 75
+                });
+                t.push({
+                    x: 110,
+                    y: 125,
+                    value: temp,
+                    radius: 30
+                });
+                
+                heatmap.setData({
+                    min: min,
+                    max: max,
+                    data: t
+                });
+                
+                if (flag) {
+                    temp += 3;
+                } else {
+                    temp -= 3;
+                }
+                if (temp <= -20) {
+                    flag = true;
+                } else if (temp >= 120) {
+                    flag = false;
+                }
+            };
+            
+            generate();
+            
+
+            setInterval(generate, 500)
+
+        };
+
+    </script>
+</body>
+
+</html>
